@@ -1,0 +1,87 @@
+name: Build Bottles
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      formula:
+        description: 'Formula to build (default: dazzle)'
+        required: false
+        default: 'dazzle'
+
+jobs:
+  build-bottle:
+    name: Build bottle on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os:
+          - macos-14      # Apple Silicon (arm64)
+          - macos-13      # Intel (x86_64)
+
+    steps:
+      - name: Checkout tap
+        uses: actions/checkout@v4
+
+      - name: Set up Homebrew
+        id: set-up-homebrew
+        uses: Homebrew/actions/setup-homebrew@master
+
+      - name: Install formula
+        run: |
+          brew install --build-bottle ./Formula/${{ github.event.inputs.formula || 'dazzle' }}.rb
+
+      - name: Build bottle
+        run: |
+          brew bottle --json ./Formula/${{ github.event.inputs.formula || 'dazzle' }}.rb
+
+      - name: Upload bottle
+        uses: actions/upload-artifact@v4
+        with:
+          name: bottles-${{ matrix.os }}
+          path: |
+            *.bottle.tar.gz
+            *.bottle.json
+          retention-days: 7
+
+  create-pr:
+    name: Create PR with bottle info
+    needs: build-bottle
+    runs-on: macos-latest
+    if: github.event_name == 'push'
+
+    steps:
+      - name: Checkout tap
+        uses: actions/checkout@v4
+
+      - name: Download all bottles
+        uses: actions/download-artifact@v4
+        with:
+          path: bottles
+
+      - name: Update formula with bottles
+        run: |
+          # This will be manual for v0.1.0
+          # In the future, automate with brew bottle --merge
+          echo "Bottles built successfully!"
+          echo "To update formula, run: brew bottle --merge --write bottles/*.json"
+
+      - name: Create Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: bottles/**/*.bottle.tar.gz
+          body: |
+            Homebrew bottles for ${{ github.ref_name }}
+
+            ## Installation
+            ```bash
+            brew tap manwithacat/tap
+            brew install dazzle
+            ```
+
+            Bottles available for:
+            - macOS 14 (Apple Silicon)
+            - macOS 14 (Intel)

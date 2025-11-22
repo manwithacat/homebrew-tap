@@ -18,6 +18,28 @@ Or install directly without tapping:
 brew install manwithacat/tap/dazzle
 ```
 
+### ⏱️ Installation Time
+
+**First install**: ~15 minutes (builds from source, includes Rust compilation)
+**Why so long?** DAZZLE depends on pydantic-core (a Rust library) which must be compiled from source following Homebrew's security practices.
+
+**Faster alternatives:**
+
+```bash
+# Option 1: Using pipx (30 seconds)
+brew install pipx
+pipx install dazzle
+
+# Option 2: Using pip (30 seconds)
+pip install dazzle
+
+# Option 3: Using uv (fastest, 10 seconds)
+brew install uv
+uv tool install dazzle
+```
+
+**Coming soon**: Pre-built bottles for instant installation (v0.1.1+)
+
 ## Usage
 
 After installation, you can use DAZZLE commands:
@@ -36,6 +58,23 @@ dazzle build
 # Get help
 dazzle --help
 ```
+
+### Shell Completion (Optional)
+
+Enable tab completion for dazzle commands:
+
+```bash
+# For Zsh
+dazzle --install-completion zsh
+
+# For Bash
+dazzle --install-completion bash
+
+# For Fish
+dazzle --install-completion fish
+```
+
+After installation, restart your shell or run `source ~/.zshrc` (or equivalent).
 
 ## What's in this Tap
 
