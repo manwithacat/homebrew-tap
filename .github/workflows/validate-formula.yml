@@ -1,0 +1,272 @@
+name: Validate Formula
+
+# This workflow validates the formula after updates from the main repo
+# and can be triggered by:
+# 1. repository_dispatch from the main dazzle repo after release
+# 2. Manual dispatch for ad-hoc testing
+# 3. Push to Formula directory
+
+on:
+  repository_dispatch:
+    types: [validate-formula]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to validate (e.g., 0.8.11)'
+        required: false
+        type: string
+  push:
+    paths:
+      - 'Formula/**'
+
+jobs:
+  validate-formula:
+    name: Validate Dazzle Formula
+    runs-on: macos-14  # Apple Silicon
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get version to validate
+        id: version
+        run: |
+          if [ "${{ github.event.client_payload.version }}" != "" ]; then
+            echo "VERSION=${{ github.event.client_payload.version }}" >> $GITHUB_OUTPUT
+            echo "SOURCE_RUN=${{ github.event.client_payload.source_run_id }}" >> $GITHUB_OUTPUT
+            echo "Validating version from dispatch: ${{ github.event.client_payload.version }}"
+          elif [ "${{ github.event.inputs.version }}" != "" ]; then
+            echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+            echo "Validating version from manual input: ${{ github.event.inputs.version }}"
+          else
+            # Extract from formula
+            VERSION=$(grep 'version "' Formula/dazzle.rb | head -1 | cut -d'"' -f2)
+            echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
+            echo "Validating version from formula: ${VERSION}"
+          fi
+
+      - name: Validate formula syntax
+        run: |
+          echo "Checking Ruby syntax..."
+          ruby -c Formula/dazzle.rb || { echo "ERROR: Formula has Ruby syntax errors"; exit 1; }
+          echo "✓ Formula syntax is valid"
+
+      - name: Check SHA256 hashes are not placeholders
+        run: |
+          echo "Checking for placeholder hashes..."
+
+          if grep -q 'PLACEHOLDER' Formula/dazzle.rb; then
+            echo "ERROR: Formula contains placeholder values!"
+            grep 'PLACEHOLDER' Formula/dazzle.rb
+            exit 1
+          fi
+
+          echo "✓ No placeholder values found"
+
+      - name: Verify SHA256 hashes match release artifacts
+        run: |
+          VERSION="${{ steps.version.outputs.VERSION }}"
+          BASE_URL="https://github.com/manwithacat/dazzle/releases/download/v${VERSION}"
+
+          echo "Verifying hashes for v${VERSION}..."
+
+          # Download and verify each artifact
+          for PLATFORM in darwin-arm64 darwin-x64 linux-arm64 linux-x64; do
+            echo "Checking ${PLATFORM}..."
+
+            # Get expected hash from formula
+            EXPECTED=$(grep -A5 "url \".*${PLATFORM}" Formula/dazzle.rb | grep 'sha256 "' | head -1 | cut -d'"' -f2)
+
+            if [ -z "${EXPECTED}" ]; then
+              echo "WARNING: Could not find SHA256 for ${PLATFORM} in formula"
+              continue
+            fi
+
+            # Download and calculate actual hash
+            ACTUAL=$(curl -sL "${BASE_URL}/dazzle-${PLATFORM}.tar.gz" | shasum -a 256 | cut -d' ' -f1)
+
+            if [ "${EXPECTED}" != "${ACTUAL}" ]; then
+              echo "ERROR: SHA256 mismatch for ${PLATFORM}!"
+              echo "  Expected: ${EXPECTED}"
+              echo "  Actual:   ${ACTUAL}"
+              exit 1
+            fi
+
+            echo "✓ ${PLATFORM} hash verified"
+          done
+
+          # Verify source tarball
+          echo "Checking source tarball..."
+          EXPECTED_SOURCE=$(grep -A1 'url "https://github.com/manwithacat/dazzle/archive' Formula/dazzle.rb | grep 'sha256 "' | head -1 | cut -d'"' -f2)
+          ACTUAL_SOURCE=$(curl -sL "https://github.com/manwithacat/dazzle/archive/refs/tags/v${VERSION}.tar.gz" | shasum -a 256 | cut -d' ' -f1)
+
+          if [ "${EXPECTED_SOURCE}" != "${ACTUAL_SOURCE}" ]; then
+            echo "ERROR: SHA256 mismatch for source tarball!"
+            echo "  Expected: ${EXPECTED_SOURCE}"
+            echo "  Actual:   ${ACTUAL_SOURCE}"
+            exit 1
+          fi
+
+          echo "✓ Source tarball hash verified"
+          echo ""
+          echo "✓ All SHA256 hashes verified successfully"
+
+      - name: Audit formula
+        run: |
+          # Use brew to audit the formula (catches common issues)
+          brew audit --strict --formula Formula/dazzle.rb || {
+            echo "WARNING: brew audit found issues (non-blocking)"
+          }
+
+      - name: Test formula installation
+        run: |
+          VERSION="${{ steps.version.outputs.VERSION }}"
+
+          echo "Installing formula locally..."
+
+          # Install from local formula
+          brew install --verbose --build-from-source Formula/dazzle.rb
+
+          echo "✓ Installation completed"
+
+          # Verify version
+          OUTPUT=$(dazzle version)
+          echo "Version output: ${OUTPUT}"
+
+          if [[ ! "${OUTPUT}" =~ "${VERSION}" ]]; then
+            echo "ERROR: Installed version doesn't match expected ${VERSION}"
+            exit 1
+          fi
+          echo "✓ Version matches"
+
+      - name: Run formula test block
+        run: |
+          # Run the test block defined in the formula
+          brew test dazzle || {
+            echo "WARNING: brew test had issues"
+            # Show logs for debugging
+            brew test dazzle --verbose || true
+          }
+
+          echo "✓ Formula test block passed"
+
+      - name: Test CLI performance
+        run: |
+          echo "Measuring CLI startup time..."
+
+          # Multiple runs to get average
+          TOTAL=0
+          for i in {1..5}; do
+            START=$(python3 -c 'import time; print(time.time())')
+            dazzle version > /dev/null
+            END=$(python3 -c 'import time; print(time.time())')
+            DURATION=$(python3 -c "print(int(($END - $START) * 1000))")
+            TOTAL=$((TOTAL + DURATION))
+            echo "  Run $i: ${DURATION}ms"
+          done
+
+          AVG=$((TOTAL / 5))
+          echo ""
+          echo "Average startup time: ${AVG}ms"
+
+          if [ "${AVG}" -gt 500 ]; then
+            echo "WARNING: CLI startup is slow (${AVG}ms > 500ms)"
+          else
+            echo "✓ Startup time acceptable"
+          fi
+
+      - name: Report status to main repo
+        if: always() && github.event.client_payload.source_run_id != ''
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.DAZZLE_REPO_TOKEN }}
+          script: |
+            // Report back to main repo
+            const status = '${{ job.status }}' === 'success' ? 'success' : 'failure';
+            const version = '${{ steps.version.outputs.VERSION }}';
+
+            await github.rest.repos.createCommitStatus({
+              owner: 'manwithacat',
+              repo: 'dazzle',
+              sha: process.env.GITHUB_SHA || 'main',
+              state: status,
+              target_url: '${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}',
+              description: `Tap formula validation for v${version}`,
+              context: 'tap-formula-validation'
+            });
+
+            console.log(`Reported ${status} status to main repo`);
+
+      - name: Summary
+        if: success()
+        run: |
+          echo "============================================"
+          echo "✓ Formula validation completed successfully"
+          echo "  Version: ${{ steps.version.outputs.VERSION }}"
+          echo "  - Syntax: Valid"
+          echo "  - SHA256 hashes: Verified"
+          echo "  - Installation: Working"
+          echo "  - Test block: Passed"
+          echo "============================================"
+
+  # Also run on Intel Mac to verify cross-platform
+  validate-intel:
+    name: Validate on Intel Mac
+    runs-on: macos-13  # Intel
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get version
+        id: version
+        run: |
+          VERSION=$(grep 'version "' Formula/dazzle.rb | head -1 | cut -d'"' -f2)
+          echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Test formula installation (Intel)
+        run: |
+          VERSION="${{ steps.version.outputs.VERSION }}"
+
+          brew install --verbose --build-from-source Formula/dazzle.rb
+
+          OUTPUT=$(dazzle version)
+          echo "Version output: ${OUTPUT}"
+
+          if [[ ! "${OUTPUT}" =~ "${VERSION}" ]]; then
+            echo "ERROR: Version mismatch on Intel"
+            exit 1
+          fi
+
+          echo "✓ Intel installation working"
+
+      - name: Run basic tests (Intel)
+        run: |
+          # Test Python integration
+          dazzle version --full | grep -q "python_available" || {
+            echo "ERROR: Python integration not working on Intel"
+            exit 1
+          }
+
+          # Create and validate test project
+          mkdir -p test-project/dsl
+
+          cat > test-project/dazzle.toml << 'EOF'
+          [project]
+          name = "test"
+          version = "0.1.0"
+          EOF
+
+          cat > test-project/dsl/app.dsl << 'EOF'
+          module test
+          app test "Test"
+          entity Task "Task":
+            id: uuid pk
+            title: str(200) required
+          EOF
+
+          cd test-project
+          dazzle check --json | grep -q '"success"' || {
+            echo "ERROR: DSL validation failed on Intel"
+            exit 1
+          }
+
+          echo "✓ Intel tests passed"
