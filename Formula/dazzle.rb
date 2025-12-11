@@ -15,7 +15,7 @@ class Dazzle < Formula
 
   desc "DSL-first application framework with LLM-assisted development"
   homepage "https://github.com/manwithacat/dazzle"
-  version "0.8.0"
+  version "0.8.5"
   license "MIT"
 
   # Source tarball for Python package
@@ -26,21 +26,21 @@ class Dazzle < Formula
   resource "cli-binary" do
     on_macos do
       on_arm do
-        url "https://github.com/manwithacat/dazzle/releases/download/v0.8.0/dazzle-darwin-arm64.tar.gz"
+        url "https://github.com/manwithacat/dazzle/releases/download/v0.8.5/dazzle-darwin-arm64.tar.gz"
         sha256 "1c39cccf60b7089db2b596ef064dcc2be02e9162ab0a32fddb874ce17460047f"
       end
       on_intel do
-        url "https://github.com/manwithacat/dazzle/releases/download/v0.8.0/dazzle-darwin-x64.tar.gz"
+        url "https://github.com/manwithacat/dazzle/releases/download/v0.8.5/dazzle-darwin-x64.tar.gz"
         sha256 "83bb943aa35bbdb66f4576155e3a7afb7aafff4dab8a4912cddc6ed229788978"
       end
     end
     on_linux do
       on_arm do
-        url "https://github.com/manwithacat/dazzle/releases/download/v0.8.0/dazzle-linux-arm64.tar.gz"
+        url "https://github.com/manwithacat/dazzle/releases/download/v0.8.5/dazzle-linux-arm64.tar.gz"
         sha256 "e53546ae7c35bf0432f38efd87008c3302e72f12157b75b7bfef20bf018c18bb"
       end
       on_intel do
-        url "https://github.com/manwithacat/dazzle/releases/download/v0.8.0/dazzle-linux-x64.tar.gz"
+        url "https://github.com/manwithacat/dazzle/releases/download/v0.8.5/dazzle-linux-x64.tar.gz"
         sha256 "58c21aac08ac3026d58896ef867c1d93c5fee521a5e560525feef83b2f1b59a5"
       end
     end
