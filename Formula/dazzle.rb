@@ -1,9 +1,9 @@
-# DAZZLE Homebrew Formula v0.9.2
+# DAZZLE Homebrew Formula v0.9.3
 #
 # Installation: brew install manwithacat/tap/dazzle
 # Or from this file: brew install ./homebrew/dazzle.rb
 #
-# v0.9.2 Architecture:
+# v0.9.3 Architecture:
 # - CLI: Bun-compiled native binary (50x faster startup)
 # - Runtime: Python package for DSL parsing and code generation
 #
@@ -15,33 +15,33 @@ class Dazzle < Formula
 
   desc "DSL-first application framework with LLM-assisted development"
   homepage "https://github.com/manwithacat/dazzle"
-  version "0.9.2"
+  version "0.9.3"
   license "MIT"
 
   # Source tarball for Python package
-  url "https://github.com/manwithacat/dazzle/archive/refs/tags/v0.9.2.tar.gz"
-  sha256 "46b70411e7dbb78dbff2cbce1d92471a716bc8329e19a6d085fdcdc82c9d1058"
+  url "https://github.com/manwithacat/dazzle/archive/refs/tags/v0.9.3.tar.gz"
+  sha256 "e32d2f2a8ed6a1e74448a7eb6462901a7571337420ce71f04292fa8f0b50d615"
 
   # Pre-compiled CLI binaries for each platform
   resource "cli-binary" do
     on_macos do
       on_arm do
-        url "https://github.com/manwithacat/dazzle/releases/download/v0.9.2/dazzle-darwin-arm64.tar.gz"
-        sha256 "873df946d938516a4e03b1262aa9f27eb2faee1be259c04b57ff2546867a61ac"
+        url "https://github.com/manwithacat/dazzle/releases/download/v0.9.3/dazzle-darwin-arm64.tar.gz"
+        sha256 "f8c010a300d867dbf0dfe49efa448fa56696f520f4c10d837633242c46b7ca4b"
       end
       on_intel do
-        url "https://github.com/manwithacat/dazzle/releases/download/v0.9.2/dazzle-darwin-x64.tar.gz"
-        sha256 "d30827e6f5dbd950eb338b40fe4b4e1fd8b7f376d2b88cf69a3003a152db369d"
+        url "https://github.com/manwithacat/dazzle/releases/download/v0.9.3/dazzle-darwin-x64.tar.gz"
+        sha256 "1fa68dfd1696dfd9b5c37fbb3ffe25310c167e064bcce12a85cb51cbb32b7474"
       end
     end
     on_linux do
       on_arm do
-        url "https://github.com/manwithacat/dazzle/releases/download/v0.9.2/dazzle-linux-arm64.tar.gz"
-        sha256 "2d4c2287726d6006e23e9c138225d380fd540a6b00d33d53c381bc3e0d43d8c0"
+        url "https://github.com/manwithacat/dazzle/releases/download/v0.9.3/dazzle-linux-arm64.tar.gz"
+        sha256 "c5097797ff622f1c20807cc2040bc6d37689ce060d93a9ba8b3e250ebb6c88fd"
       end
       on_intel do
-        url "https://github.com/manwithacat/dazzle/releases/download/v0.9.2/dazzle-linux-x64.tar.gz"
-        sha256 "4b29e22af54d0cfe83829aaf316f5fb380e03ab24970750bbf12e4dc0ad8abcb"
+        url "https://github.com/manwithacat/dazzle/releases/download/v0.9.3/dazzle-linux-x64.tar.gz"
+        sha256 "b4189f74c01d86bfa920e2906861e4919294c891e7b9ef7649e7505382b1608f"
       end
     end
   end
@@ -75,21 +75,21 @@ class Dazzle < Formula
   resource "jiter" do
     on_macos do
       on_arm do
-        url "https://files.pythonhosted.org/packages/f0/93/5aa0d5c10fbb925ffe33c1e3c7da3c7ccaa5a64d6de91c9de0d52f0ca5bc/jiter-0.12.0-cp312-cp312-macosx_11_0_arm64.whl"
+        url "https://files.pythonhosted.org/packages/98/6e/e8efa0e78de00db0aee82c0cf9e8b3f2027efd7f8a71f859d8f4be8e98ef/jiter-0.12.0-cp312-cp312-macosx_11_0_arm64.whl"
         sha256 "5c1860627048e302a528333c9307c818c547f214d8659b0705d2195e1a94b274"
       end
       on_intel do
-        url "https://files.pythonhosted.org/packages/25/b4/44b18b96d8e0c0e36bff8b4ea7a273c85f0ba1e1f1e21de252beec9c8679/jiter-0.12.0-cp312-cp312-macosx_10_12_x86_64.whl"
+        url "https://files.pythonhosted.org/packages/92/c9/5b9f7b4983f1b542c64e84165075335e8a236fa9e2ea03a0c79780062be8/jiter-0.12.0-cp312-cp312-macosx_10_12_x86_64.whl"
         sha256 "305e061fa82f4680607a775b2e8e0bcb071cd2205ac38e6ef48c8dd5ebe1cf37"
       end
     end
     on_linux do
       on_arm do
-        url "https://files.pythonhosted.org/packages/f3/0d/1ff4c0ec8a7a7a35f3b5d55ed5a94ff4ba47f88fd1e40bf4b3d4e60dc7c1/jiter-0.12.0-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl"
+        url "https://files.pythonhosted.org/packages/20/26/894cd88e60b5d58af53bec5c6759d1292bd0b37a8b5f60f07abf7a63ae5f/jiter-0.12.0-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl"
         sha256 "df37577a4f8408f7e0ec3205d2a8f87672af8f17008358063a4d6425b6081ce3"
       end
       on_intel do
-        url "https://files.pythonhosted.org/packages/f2/19/ec34bccdfd5bbf1cfc88c95ed1cd22e816dc9e1e8d7cb616a88cc0969fa0/jiter-0.12.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl"
+        url "https://files.pythonhosted.org/packages/71/b3/7a69d77943cc837d30165643db753471aff5df39692d598da880a6e51c24/jiter-0.12.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl"
         sha256 "4321e8a3d868919bcb1abb1db550d41f2b5b326f72df29e53b2df8b006eb9403"
       end
     end
@@ -152,7 +152,7 @@ class Dazzle < Formula
 
   def caveats
     <<~EOS
-      DAZZLE v0.9.2 has been installed!
+      DAZZLE v0.9.3 has been installed!
 
       What's New:
         - 50x faster CLI startup (Bun-compiled binary)
@@ -188,7 +188,7 @@ class Dazzle < Formula
   test do
     # Test fast path (no Python needed)
     output = shell_output("#{bin}/dazzle version")
-    assert_match "0.9.2", output
+    assert_match "0.9.3", output
 
     # Test Python integration
     output = shell_output("#{bin}/dazzle version --full")
