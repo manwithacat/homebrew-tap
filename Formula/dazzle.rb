@@ -20,28 +20,28 @@ class Dazzle < Formula
 
   # Source tarball for Python package
   url "https://github.com/manwithacat/dazzle/archive/refs/tags/v0.14.0.tar.gz"
-  sha256 "c82547de479daa4ed19d72a3fc8de725f02ee21d0f6a0ad6fd7f73d7aade3f73"
+  sha256 "879c437eaf9d8b706169fd6065d6aa35e051a424ace525ec9cedb888e26d7ce5"
 
   # Pre-compiled CLI binaries for each platform
   resource "cli-binary" do
     on_macos do
       on_arm do
         url "https://github.com/manwithacat/dazzle/releases/download/v0.14.0/dazzle-darwin-arm64.tar.gz"
-        sha256 "e9774929714e2930b15211f364b386199e0541104e8204e04a8ef7977c921c98"
+        sha256 "91dda8fb514cc7ce2a74b6dd4719b1df844e791f3be47ef55428b4979e5a5426"
       end
       on_intel do
         url "https://github.com/manwithacat/dazzle/releases/download/v0.14.0/dazzle-darwin-x64.tar.gz"
-        sha256 "e6cd269aa4e12c9af91a4b64ea0feb62b7944a1ae37e3e4595f3e579d0fac870"
+        sha256 "3659c047da3614459c540d967dbc3f47d6de51765f0b350c16c573a711e5114f"
       end
     end
     on_linux do
       on_arm do
         url "https://github.com/manwithacat/dazzle/releases/download/v0.14.0/dazzle-linux-arm64.tar.gz"
-        sha256 "2354b20f3be474f9eadcffeb3a462b3bc742f5d1517e5acb896fedf8388822f9"
+        sha256 "4061e81d9425e65dd83de45572c4d0eaf0a8f673ce99b5e41e6120a39254ca80"
       end
       on_intel do
         url "https://github.com/manwithacat/dazzle/releases/download/v0.14.0/dazzle-linux-x64.tar.gz"
-        sha256 "e91c2257d6171aad437281346f0e2b01d769b1b87a03924be8798f5a9b7d2037"
+        sha256 "f9846942769dc2fd78f63e8f65e601bb6dfc46526af299087c5292619a736007"
       end
     end
   end
