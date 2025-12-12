@@ -1,9 +1,9 @@
-# DAZZLE Homebrew Formula v0.12.0
+# DAZZLE Homebrew Formula v0.14.0
 #
 # Installation: brew install manwithacat/tap/dazzle
 # Or from this file: brew install ./homebrew/dazzle.rb
 #
-# v0.12.0 Architecture:
+# v0.14.0 Architecture:
 # - CLI: Bun-compiled native binary (50x faster startup)
 # - Runtime: Python package for DSL parsing and code generation
 #
@@ -15,33 +15,35 @@ class Dazzle < Formula
 
   desc "DSL-first application framework with LLM-assisted development"
   homepage "https://github.com/manwithacat/dazzle"
-  version "0.12.0"
+  version "0.14.0"
   license "MIT"
 
   # Source tarball for Python package
-  url "https://github.com/manwithacat/dazzle/archive/refs/tags/v0.12.0.tar.gz"
-  sha256 "47c57f2eec09a3cba79b085d20d8ee07f97af176d265983a7eedf03786b9cdc0"
+  # SHA256 will be updated by CI after tag is created
+  url "https://github.com/manwithacat/dazzle/archive/refs/tags/v0.14.0.tar.gz"
+  sha256 "PLACEHOLDER_SOURCE_SHA256"
 
   # Pre-compiled CLI binaries for each platform
+  # SHA256 values will be updated by CI after release binaries are built
   resource "cli-binary" do
     on_macos do
       on_arm do
-        url "https://github.com/manwithacat/dazzle/releases/download/v0.12.0/dazzle-darwin-arm64.tar.gz"
-        sha256 "277c10635aa522870473068463f2a65188e9a21a626bb4ede270a39176ca7486"
+        url "https://github.com/manwithacat/dazzle/releases/download/v0.14.0/dazzle-darwin-arm64.tar.gz"
+        sha256 "PLACEHOLDER_DARWIN_ARM64_SHA256"
       end
       on_intel do
-        url "https://github.com/manwithacat/dazzle/releases/download/v0.12.0/dazzle-darwin-x64.tar.gz"
-        sha256 "1687d49ec038f5db30f2c5173baacfecfe8c3db9b09ecdfd01d067b67c85bec2"
+        url "https://github.com/manwithacat/dazzle/releases/download/v0.14.0/dazzle-darwin-x64.tar.gz"
+        sha256 "PLACEHOLDER_DARWIN_X64_SHA256"
       end
     end
     on_linux do
       on_arm do
-        url "https://github.com/manwithacat/dazzle/releases/download/v0.12.0/dazzle-linux-arm64.tar.gz"
-        sha256 "1ccf0499ad41d54acc7d63a367b22dc4c079e01af7e6b0c49c338a7ea6df1215"
+        url "https://github.com/manwithacat/dazzle/releases/download/v0.14.0/dazzle-linux-arm64.tar.gz"
+        sha256 "PLACEHOLDER_LINUX_ARM64_SHA256"
       end
       on_intel do
-        url "https://github.com/manwithacat/dazzle/releases/download/v0.12.0/dazzle-linux-x64.tar.gz"
-        sha256 "dc00a33a303a47e09a72108e98698425145a57b459a49b23f71096fa279fee38"
+        url "https://github.com/manwithacat/dazzle/releases/download/v0.14.0/dazzle-linux-x64.tar.gz"
+        sha256 "PLACEHOLDER_LINUX_X64_SHA256"
       end
     end
   end
@@ -121,11 +123,11 @@ class Dazzle < Formula
              wheel
     end
 
-    # Install dazzle with all optional dependencies (mcp, llm)
+    # Install dazzle with all optional dependencies (mcp, llm, lsp)
     # pip will resolve transitive dependencies and use our pre-installed pydantic-core and jiter
     system venv.root/"bin/python", "-m", "pip", "install",
            "--no-compile",
-           "#{buildpath}[mcp,llm]"
+           "#{buildpath}[mcp,llm,lsp]"
 
     # Install the pre-compiled CLI binary
     resource("cli-binary").stage do
@@ -152,7 +154,7 @@ class Dazzle < Formula
 
   def caveats
     <<~EOS
-      DAZZLE v0.12.0 has been installed!
+      DAZZLE v0.14.0 has been installed!
 
       What's New:
         - 50x faster CLI startup (Bun-compiled binary)
@@ -188,11 +190,15 @@ class Dazzle < Formula
   test do
     # Test fast path (no Python needed)
     output = shell_output("#{bin}/dazzle version")
-    assert_match "0.12.0", output
+    assert_match "0.14.0", output
 
     # Test Python integration
     output = shell_output("#{bin}/dazzle version --full")
     assert_match "python_available", output
+
+    # Test LSP dependencies are installed (critical for VS Code extension)
+    # This catches the regression where [lsp] extras were missing from pip install
+    system libexec/"bin/python", "-c", "import dazzle.lsp"
 
     # Test basic functionality
     (testpath/"dazzle.toml").write <<~TOML
