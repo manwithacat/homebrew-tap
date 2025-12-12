@@ -1,9 +1,9 @@
-# DAZZLE Homebrew Formula v0.10.0
+# DAZZLE Homebrew Formula v0.10.1
 #
 # Installation: brew install manwithacat/tap/dazzle
 # Or from this file: brew install ./homebrew/dazzle.rb
 #
-# v0.10.0 Architecture:
+# v0.10.1 Architecture:
 # - CLI: Bun-compiled native binary (50x faster startup)
 # - Runtime: Python package for DSL parsing and code generation
 #
@@ -15,33 +15,33 @@ class Dazzle < Formula
 
   desc "DSL-first application framework with LLM-assisted development"
   homepage "https://github.com/manwithacat/dazzle"
-  version "0.10.0"
+  version "0.10.1"
   license "MIT"
 
   # Source tarball for Python package
-  url "https://github.com/manwithacat/dazzle/archive/refs/tags/v0.10.0.tar.gz"
-  sha256 "c4121892dab6dd3c796da8b28f53f1a3ff4c957d6efe0e6cf5c2188268b4ba56"
+  url "https://github.com/manwithacat/dazzle/archive/refs/tags/v0.10.1.tar.gz"
+  sha256 "26df5dc19bedded93fe4ea7c375026ef561e04ec8ab50ab52ae4c8d9e4fe8f89"
 
   # Pre-compiled CLI binaries for each platform
   resource "cli-binary" do
     on_macos do
       on_arm do
-        url "https://github.com/manwithacat/dazzle/releases/download/v0.10.0/dazzle-darwin-arm64.tar.gz"
-        sha256 "916f1827de05ee219d74434b1c96dfc0436e5f1fd1b18f8245a8b8cbd0f127f2"
+        url "https://github.com/manwithacat/dazzle/releases/download/v0.10.1/dazzle-darwin-arm64.tar.gz"
+        sha256 "1ab8cc531a88b3e501cd838019d7819b654861aa93fdd1accc376916581194af"
       end
       on_intel do
-        url "https://github.com/manwithacat/dazzle/releases/download/v0.10.0/dazzle-darwin-x64.tar.gz"
-        sha256 "66adba608d386f89554a5f232f665b5173c74232842000dde044187465be077f"
+        url "https://github.com/manwithacat/dazzle/releases/download/v0.10.1/dazzle-darwin-x64.tar.gz"
+        sha256 "a9e06638b3ad2524a9e6c7df561f133475920dcb1a3da8c15c4c9c3e80c5d9b0"
       end
     end
     on_linux do
       on_arm do
-        url "https://github.com/manwithacat/dazzle/releases/download/v0.10.0/dazzle-linux-arm64.tar.gz"
-        sha256 "3ff2f75891a763c2c1d049a5161ffe24df0d6fab96fee466b74fabe68cd02993"
+        url "https://github.com/manwithacat/dazzle/releases/download/v0.10.1/dazzle-linux-arm64.tar.gz"
+        sha256 "84e2abb3014729045406d2f9c89556f38cffb934ebd77c2fd207ab9a62768af4"
       end
       on_intel do
-        url "https://github.com/manwithacat/dazzle/releases/download/v0.10.0/dazzle-linux-x64.tar.gz"
-        sha256 "5bc9e723fe3d457ca9f362489068bf99b23c4fd0d5248ca2afc238c867689403"
+        url "https://github.com/manwithacat/dazzle/releases/download/v0.10.1/dazzle-linux-x64.tar.gz"
+        sha256 "9b7ed075d5694391e1058f387dfad46b2e29835f94d3d8195a77c704dbc72c12"
       end
     end
   end
@@ -152,7 +152,7 @@ class Dazzle < Formula
 
   def caveats
     <<~EOS
-      DAZZLE v0.10.0 has been installed!
+      DAZZLE v0.10.1 has been installed!
 
       What's New:
         - 50x faster CLI startup (Bun-compiled binary)
@@ -188,7 +188,7 @@ class Dazzle < Formula
   test do
     # Test fast path (no Python needed)
     output = shell_output("#{bin}/dazzle version")
-    assert_match "0.10.0", output
+    assert_match "0.10.1", output
 
     # Test Python integration
     output = shell_output("#{bin}/dazzle version --full")
