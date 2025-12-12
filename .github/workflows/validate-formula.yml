@@ -211,7 +211,7 @@ jobs:
   # Also run on Intel Mac to verify cross-platform
   validate-intel:
     name: Validate on Intel Mac
-    runs-on: macos-13  # Intel
+    runs-on: macos-15  # Intel (macos-13 is retired)
 
     steps:
       - uses: actions/checkout@v4
@@ -253,6 +253,7 @@ jobs:
           [project]
           name = "test"
           version = "0.1.0"
+          root = "test"
           EOF
 
           cat > test-project/dsl/app.dsl << 'EOF'
