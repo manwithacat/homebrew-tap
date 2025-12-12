@@ -19,31 +19,29 @@ class Dazzle < Formula
   license "MIT"
 
   # Source tarball for Python package
-  # SHA256 will be updated by CI after tag is created
   url "https://github.com/manwithacat/dazzle/archive/refs/tags/v0.14.0.tar.gz"
-  sha256 "PLACEHOLDER_SOURCE_SHA256"
+  sha256 "6c58e3111cf651ac6a0addc6a657baaf8e15a072d3b8d7e4d4b3c9ac9b4fa84f"
 
   # Pre-compiled CLI binaries for each platform
-  # SHA256 values will be updated by CI after release binaries are built
   resource "cli-binary" do
     on_macos do
       on_arm do
         url "https://github.com/manwithacat/dazzle/releases/download/v0.14.0/dazzle-darwin-arm64.tar.gz"
-        sha256 "PLACEHOLDER_DARWIN_ARM64_SHA256"
+        sha256 "150570ed87f2205a8d45fb4eb3c7f739e475086311dd8463e0656cd77c9f89cc"
       end
       on_intel do
         url "https://github.com/manwithacat/dazzle/releases/download/v0.14.0/dazzle-darwin-x64.tar.gz"
-        sha256 "PLACEHOLDER_DARWIN_X64_SHA256"
+        sha256 "04b33b9a047df1293265a4853d89e388089d1ccaf570a3b626376a34cc663320"
       end
     end
     on_linux do
       on_arm do
         url "https://github.com/manwithacat/dazzle/releases/download/v0.14.0/dazzle-linux-arm64.tar.gz"
-        sha256 "PLACEHOLDER_LINUX_ARM64_SHA256"
+        sha256 "285e3b7b1ac720138964fb4d723ce0e42cef0fb424fb8ab893d109ac9fcbd7c5"
       end
       on_intel do
         url "https://github.com/manwithacat/dazzle/releases/download/v0.14.0/dazzle-linux-x64.tar.gz"
-        sha256 "PLACEHOLDER_LINUX_X64_SHA256"
+        sha256 "d5fcd3e5619bef6f0d0109d43cefc9656f26e777eb9f33fe4477ce8f7c803307"
       end
     end
   end
@@ -125,6 +123,7 @@ class Dazzle < Formula
 
     # Install dazzle with all optional dependencies (mcp, llm, lsp)
     # pip will resolve transitive dependencies and use our pre-installed pydantic-core and jiter
+    # IMPORTANT: lsp is required for VS Code extension Language Server Protocol support
     system venv.root/"bin/python", "-m", "pip", "install",
            "--no-compile",
            "#{buildpath}[mcp,llm,lsp]"
