@@ -127,7 +127,7 @@ jobs:
           brew tap manwithacat/tap "$PWD"
 
           # Install from tapped formula
-          brew install --verbose --build-from-source manwithacat/tap/dazzle
+          brew install --verbose manwithacat/tap/dazzle
 
           echo "✓ Installation completed"
 
@@ -233,7 +233,7 @@ jobs:
           brew tap manwithacat/tap "$PWD"
 
           # Install from tapped formula
-          brew install --verbose --build-from-source manwithacat/tap/dazzle
+          brew install --verbose manwithacat/tap/dazzle
 
           OUTPUT=$(dazzle version)
           echo "Version output: ${OUTPUT}"
