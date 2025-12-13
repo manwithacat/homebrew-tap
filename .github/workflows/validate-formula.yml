@@ -123,8 +123,11 @@ jobs:
 
           echo "Installing formula locally..."
 
-          # Install from local formula
-          brew install --verbose --build-from-source Formula/dazzle.rb
+          # Tap the local checkout so Homebrew recognizes it
+          brew tap manwithacat/tap "$PWD"
+
+          # Install from tapped formula
+          brew install --verbose --build-from-source manwithacat/tap/dazzle
 
           echo "✓ Installation completed"
 
@@ -226,7 +229,11 @@ jobs:
         run: |
           VERSION="${{ steps.version.outputs.VERSION }}"
 
-          brew install --verbose --build-from-source Formula/dazzle.rb
+          # Tap the local checkout so Homebrew recognizes it
+          brew tap manwithacat/tap "$PWD"
+
+          # Install from tapped formula
+          brew install --verbose --build-from-source manwithacat/tap/dazzle
 
           OUTPUT=$(dazzle version)
           echo "Version output: ${OUTPUT}"
