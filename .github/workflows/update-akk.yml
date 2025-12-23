@@ -1,0 +1,139 @@
+name: Update akk Formula
+
+on:
+  repository_dispatch:
+    types: [release]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to update (e.g., v0.1.0)'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  update-formula:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "repository_dispatch" ]; then
+            echo "version=${{ github.event.client_payload.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Download release artifacts and compute checksums
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          BASE_URL="https://github.com/manwithacat/akkadian/releases/download/akk-${VERSION}"
+
+          # Download and compute SHA256 for each platform
+          curl -sL "${BASE_URL}/akk-darwin-arm64.tar.gz" -o darwin-arm64.tar.gz
+          curl -sL "${BASE_URL}/akk-darwin-x64.tar.gz" -o darwin-x64.tar.gz
+          curl -sL "${BASE_URL}/akk-linux-x64.tar.gz" -o linux-x64.tar.gz
+
+          echo "SHA_DARWIN_ARM64=$(sha256sum darwin-arm64.tar.gz | awk '{print $1}')" >> $GITHUB_ENV
+          echo "SHA_DARWIN_X64=$(sha256sum darwin-x64.tar.gz | awk '{print $1}')" >> $GITHUB_ENV
+          echo "SHA_LINUX_X64=$(sha256sum linux-x64.tar.gz | awk '{print $1}')" >> $GITHUB_ENV
+
+      - name: Update formula
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          VERSION_NUM="${VERSION#v}"
+
+          cat > Formula/akk.rb << 'FORMULA_EOF'
+          # akk Homebrew Formula
+          #
+          # Installation: brew install manwithacat/tap/akk
+          #
+          # This formula downloads pre-compiled binaries from GitHub releases.
+          # Binaries are built using `bun build --compile` in the akkadian repo CI.
+
+          class Akk < Formula
+            desc "CLI for ML training workflows - Kaggle, Colab, MLflow integration"
+            homepage "https://github.com/manwithacat/akkadian"
+            version "VERSION_PLACEHOLDER"
+            license "MIT"
+
+            on_macos do
+              on_arm do
+                url "https://github.com/manwithacat/akkadian/releases/download/akk-vVERSION_PLACEHOLDER/akk-darwin-arm64.tar.gz"
+                sha256 "SHA_DARWIN_ARM64_PLACEHOLDER"
+              end
+              on_intel do
+                url "https://github.com/manwithacat/akkadian/releases/download/akk-vVERSION_PLACEHOLDER/akk-darwin-x64.tar.gz"
+                sha256 "SHA_DARWIN_X64_PLACEHOLDER"
+              end
+            end
+
+            on_linux do
+              on_intel do
+                url "https://github.com/manwithacat/akkadian/releases/download/akk-vVERSION_PLACEHOLDER/akk-linux-x64.tar.gz"
+                sha256 "SHA_LINUX_X64_PLACEHOLDER"
+              end
+            end
+
+            def install
+              if OS.mac?
+                if Hardware::CPU.arm?
+                  bin.install "akk-darwin-arm64" => "akk"
+                else
+                  bin.install "akk-darwin-x64" => "akk"
+                end
+              else
+                bin.install "akk-linux-x64" => "akk"
+              end
+            end
+
+            def caveats
+              <<~EOS
+                akk has been installed!
+
+                Quick start:
+                  akk doctor                           # Check dependencies
+                  akk kaggle upload-notebook train.py  # Upload to Kaggle
+                  akk preflight check train.py         # Validate before deploy
+                  akk notebook build config.toml       # Generate from config
+
+                MCP Server (Claude Code):
+                  Add to Claude Desktop config:
+                  {
+                    "mcpServers": {
+                      "akkadian": {
+                        "command": "#{HOMEBREW_PREFIX}/bin/akk",
+                        "args": ["mcp", "serve"]
+                      }
+                    }
+                  }
+
+                Documentation:
+                  https://github.com/manwithacat/akkadian/tree/main/tools/akk-cli
+              EOS
+            end
+
+            test do
+              output = shell_output("#{bin}/akk version")
+              assert_match "akk", output.downcase
+            end
+          end
+          FORMULA_EOF
+
+          # Replace placeholders
+          sed -i "s/VERSION_PLACEHOLDER/${VERSION_NUM}/g" Formula/akk.rb
+          sed -i "s/SHA_DARWIN_ARM64_PLACEHOLDER/${SHA_DARWIN_ARM64}/g" Formula/akk.rb
+          sed -i "s/SHA_DARWIN_X64_PLACEHOLDER/${SHA_DARWIN_X64}/g" Formula/akk.rb
+          sed -i "s/SHA_LINUX_X64_PLACEHOLDER/${SHA_LINUX_X64}/g" Formula/akk.rb
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Formula/akk.rb
+          git commit -m "Update akk to ${{ steps.version.outputs.version }}"
+          git push
