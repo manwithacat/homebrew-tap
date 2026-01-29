@@ -8,24 +8,24 @@
 class Akk < Formula
   desc "CLI for ML training workflows - Kaggle, Colab, MLflow integration"
   homepage "https://github.com/manwithacat/akkadian"
-  version "1.1.0"
+  version "1.2.0"
   license "MIT"
 
   on_macos do
     on_arm do
-      url "https://github.com/manwithacat/akkadian/releases/download/akk-v1.1.0/akk-darwin-arm64.tar.gz"
-      sha256 "e9b864b1f35c9b36f33e05889b2d700cb9a1eac3def161b59ec24bbcd3161b89"
+      url "https://github.com/manwithacat/akkadian/releases/download/akk-v1.2.0/akk-darwin-arm64.tar.gz"
+      sha256 "6f688ba4466ada5f6c88b8cb04446171bd63abb244cfa01d56d4e1bb6e4764a7"
     end
     on_intel do
-      url "https://github.com/manwithacat/akkadian/releases/download/akk-v1.1.0/akk-darwin-x64.tar.gz"
-      sha256 "92c7612d8068c5ae4055af6ea1a3c7551faa89ee88605262ac09a954cbfe9b6b"
+      url "https://github.com/manwithacat/akkadian/releases/download/akk-v1.2.0/akk-darwin-x64.tar.gz"
+      sha256 "271502994952b1095efb00b9d773db4a812de4f61d8caa081c7c8f924b6129b9"
     end
   end
 
   on_linux do
     on_intel do
-      url "https://github.com/manwithacat/akkadian/releases/download/akk-v1.1.0/akk-linux-x64.tar.gz"
-      sha256 "0d6a9521f42a196cbcbbb19768779cda581981a1a81c17a81230518117d75abf"
+      url "https://github.com/manwithacat/akkadian/releases/download/akk-v1.2.0/akk-linux-x64.tar.gz"
+      sha256 "57d103db7617a953e5a2a00dd1765eec7aee08c9516f50746e553e20ebc0662d"
     end
   end
 
