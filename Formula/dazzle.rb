@@ -13,7 +13,7 @@ class Dazzle < Formula
   license "MIT"
 
   url "https://github.com/manwithacat/dazzle/archive/refs/tags/v0.23.0.tar.gz"
-  sha256 "e76c996a560c39fff1857d802e48692a691fbd523d9b3852cf8dbf15a5137f51"
+  sha256 "457600bd1e3a21613d11fa4dd6f7257ad39e45e21b57030dd7ab3bd9be1d8145"
 
   # pydantic-core requires Rust to build from source, so use pre-built wheels
   resource "pydantic-core" do
