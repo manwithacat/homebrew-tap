@@ -1,50 +1,19 @@
-# DAZZLE Homebrew Formula v0.22.0
+# DAZZLE Homebrew Formula v0.23.0
 #
 # Installation: brew install manwithacat/tap/dazzle
-# Or from this file: brew install ./homebrew/dazzle.rb
 #
-# v0.22.0 Architecture:
-# - CLI: Bun-compiled native binary (50x faster startup)
-# - Runtime: Python package for DSL parsing and code generation
-#
-# The binary is built from cli/ using `bun build --compile`
-# Python is invoked only when DSL operations are needed
+# Pure Python — no wrapper script, no binary artifacts.
 
 class Dazzle < Formula
   include Language::Python::Virtualenv
 
   desc "DSL-first application framework with LLM-assisted development"
   homepage "https://github.com/manwithacat/dazzle"
-  version "0.22.0"
+  version "0.23.0"
   license "MIT"
 
-  # Source tarball for Python package
-  url "https://github.com/manwithacat/dazzle/archive/refs/tags/v0.22.0.tar.gz"
-  sha256 "56c9bee865dcb9fdcd5c817d8ccf9a785461338485d0e03905c77b04fdd77c34"
-
-  # Pre-compiled CLI binaries for each platform
-  resource "cli-binary" do
-    on_macos do
-      on_arm do
-        url "https://github.com/manwithacat/dazzle/releases/download/v0.22.0/dazzle-darwin-arm64.tar.gz"
-        sha256 "95d2248afead142e578dc158dda039b208b6ad6fa073fe5aafc8c14e8d73aef1"
-      end
-      on_intel do
-        url "https://github.com/manwithacat/dazzle/releases/download/v0.22.0/dazzle-darwin-x64.tar.gz"
-        sha256 "600e51fce30dd9d139f16aab805d7b83618a89602241612261ed9596b8728108"
-      end
-    end
-    on_linux do
-      on_arm do
-        url "https://github.com/manwithacat/dazzle/releases/download/v0.22.0/dazzle-linux-arm64.tar.gz"
-        sha256 "dc0cd1e11ac48709d1940522bd371199afc2f5000e6661fc6aeabb72ffc2e50c"
-      end
-      on_intel do
-        url "https://github.com/manwithacat/dazzle/releases/download/v0.22.0/dazzle-linux-x64.tar.gz"
-        sha256 "69da8fccc6055834bde7af33e32767e16c1b0e813b83d3a4e62057db16e92a2f"
-      end
-    end
-  end
+  url "https://github.com/manwithacat/dazzle/archive/refs/tags/v0.23.0.tar.gz"
+  sha256 "e76c996a560c39fff1857d802e48692a691fbd523d9b3852cf8dbf15a5137f51"
 
   # pydantic-core requires Rust to build from source, so use pre-built wheels
   resource "pydantic-core" do
@@ -71,7 +40,6 @@ class Dazzle < Formula
   end
 
   # jiter also requires Rust to build - pre-built wheels avoid dylib header issues
-  # The jiter dylib has minimal Mach-O headers that cause install_name_tool failures
   resource "jiter" do
     on_macos do
       on_arm do
@@ -98,7 +66,6 @@ class Dazzle < Formula
   depends_on "python@3.12"
 
   def install
-    # Install Python package in virtualenv
     venv = virtualenv_create(libexec, "python3.12")
 
     # Install pydantic-core wheel first (requires Rust to build from source)
@@ -122,25 +89,12 @@ class Dazzle < Formula
     end
 
     # Install dazzle with all optional dependencies (mcp, llm, lsp)
-    # pip will resolve transitive dependencies and use our pre-installed pydantic-core and jiter
-    # IMPORTANT: lsp is required for VS Code extension Language Server Protocol support
     system venv.root/"bin/python", "-m", "pip", "install",
            "--no-compile",
            "#{buildpath}[mcp,llm,lsp]"
 
-    # Install the pre-compiled CLI binary
-    resource("cli-binary").stage do
-      bin.install "dazzle" => "dazzle-bin"
-    end
-
-    # Create wrapper script that sets up Python path
-    (bin/"dazzle").write <<~EOS
-      #!/bin/bash
-      export DAZZLE_PYTHON="#{libexec}/bin/python"
-      export PYTHONPATH="#{libexec}/lib/python3.12/site-packages:$PYTHONPATH"
-      exec "#{bin}/dazzle-bin" "$@"
-    EOS
-    chmod 0755, bin/"dazzle"
+    # Symlink the console_scripts entry point directly
+    bin.install_symlink libexec/"bin/dazzle"
   end
 
   def post_install
@@ -148,38 +102,29 @@ class Dazzle < Formula
     system libexec/"bin/python", "-m", "dazzle.cli", "mcp-setup"
   rescue StandardError => e
     opoo "Could not register MCP server: #{e.message}"
-    opoo "You can manually register later with: dazzle mcp-setup"
+    opoo "You can manually register later with: dazzle mcp setup"
   end
 
   def caveats
     <<~EOS
-      DAZZLE v0.22.0 has been installed!
-
-      What's New:
-        - 50x faster CLI startup (Bun-compiled binary)
-        - LLM-friendly JSON output (pipe to agents)
-        - Simplified command structure
+      DAZZLE v0.23.0 has been installed!
 
       Quick start:
-        dazzle new my-project
+        dazzle init my-project
         cd my-project
-        dazzle dev
+        dazzle serve
 
       Commands:
-        dazzle new      Create a new project
-        dazzle dev      Start development server (API + UI)
-        dazzle check    Validate DSL files
-        dazzle build    Build for production
-        dazzle specs    Generate API specifications
-        dazzle test     Run E2E tests
-
-      JSON output (for AI agents):
-        dazzle check --json
-        dazzle show entities --json
+        dazzle init       Create a new project
+        dazzle serve      Start development server (API + UI)
+        dazzle validate   Validate DSL files
+        dazzle lint       Extended checks
+        dazzle build      Build for production
+        dazzle doctor     Check environment health
 
       MCP Server (Claude Code):
         The DAZZLE MCP server has been automatically registered.
-        Check status: dazzle mcp-check
+        Check status: dazzle mcp check
 
       Documentation:
         https://github.com/manwithacat/dazzle
@@ -187,19 +132,14 @@ class Dazzle < Formula
   end
 
   test do
-    # Test fast path (no Python needed)
-    output = shell_output("#{bin}/dazzle version")
-    assert_match "0.22.0", output
+    # Test that the console script works
+    output = shell_output("#{bin}/dazzle --version")
+    assert_match "dazzle", output.downcase
 
-    # Test Python integration
-    output = shell_output("#{bin}/dazzle version --full")
-    assert_match "python_available", output
-
-    # Test LSP dependencies are installed (critical for VS Code extension)
-    # This catches the regression where [lsp] extras were missing from pip install
+    # Test LSP dependencies are installed
     system libexec/"bin/python", "-c", "import dazzle.lsp"
 
-    # Test basic functionality
+    # Test DSL validation with a minimal project
     (testpath/"dazzle.toml").write <<~TOML
       [project]
       name = "test"
@@ -216,8 +156,6 @@ class Dazzle < Formula
         title: str(200) required
     DSL
 
-    # Test validation
-    output = shell_output("#{bin}/dazzle check --json")
-    assert_match '"success"', output
+    system bin/"dazzle", "validate"
   end
 end
