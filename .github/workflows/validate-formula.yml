@@ -291,7 +291,13 @@ jobs:
           EOF
 
           cd test-project
-          dazzle check --json | grep -q '"success"' || {
+          # `dazzle validate` is the correct smoke test: it parses the
+          # DSL in the current project dir and exits 0 on success. The
+          # old `dazzle check --json` was wrong twice over — `check` is
+          # the E2E runner (needs a running server + test suite, not a
+          # freshly-installed CLI in a throwaway dir) and has no --json
+          # flag.
+          dazzle validate || {
             echo "ERROR: DSL validation failed on Intel"
             exit 1
           }
