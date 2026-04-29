@@ -1,4 +1,4 @@
-# DAZZLE Homebrew Formula v0.62.1
+# DAZZLE Homebrew Formula v0.62.2
 #
 # Installation: brew install manwithacat/tap/dazzle
 #
@@ -9,11 +9,11 @@ class Dazzle < Formula
 
   desc "DSL-first application framework with LLM-assisted development"
   homepage "https://github.com/manwithacat/dazzle"
-  version "0.62.1"
+  version "0.62.2"
   license "MIT"
 
-  url "https://github.com/manwithacat/dazzle/archive/refs/tags/v0.62.1.tar.gz"
-  sha256 "fff331a310c2de6f73312af4b6a558fdec0e9a96eb02b5c4b54dc7d9494e4136"
+  url "https://github.com/manwithacat/dazzle/archive/refs/tags/v0.62.2.tar.gz"
+  sha256 "abe70d388ce20e6a00c9dabcd99f301dc64b0d70ffc3cf8b1cfbb048730f8099"
 
   # pydantic-core requires Rust to build from source, so use pre-built wheels
   resource "pydantic-core" do
@@ -109,7 +109,7 @@ class Dazzle < Formula
 
   def caveats
     <<~EOS
-      DAZZLE v0.62.1 has been installed!
+      DAZZLE v0.62.2 has been installed!
 
       Quick start:
         dazzle init my-project
