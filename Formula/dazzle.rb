@@ -1,4 +1,4 @@
-# DAZZLE Homebrew Formula v0.63.100
+# DAZZLE Homebrew Formula v0.63.101
 #
 # Installation: brew install manwithacat/tap/dazzle
 #
@@ -9,11 +9,11 @@ class Dazzle < Formula
 
   desc "DSL-first application framework with LLM-assisted development"
   homepage "https://github.com/manwithacat/dazzle"
-  version "0.63.100"
+  version "0.63.101"
   license "MIT"
 
-  url "https://github.com/manwithacat/dazzle/archive/refs/tags/v0.63.100.tar.gz"
-  sha256 "e36542124413360913449a327da2b293bfdffc2924c0b9f1422fc087e619d5f3"
+  url "https://github.com/manwithacat/dazzle/archive/refs/tags/v0.63.101.tar.gz"
+  sha256 "20c7411d0db9725b702839edce05b5c6720065a0d975617bcb2d6ab7b7d9c026"
 
   # pydantic-core requires Rust to build from source, so use pre-built wheels
   resource "pydantic-core" do
@@ -109,7 +109,7 @@ class Dazzle < Formula
 
   def caveats
     <<~EOS
-      DAZZLE v0.63.100 has been installed!
+      DAZZLE v0.63.101 has been installed!
 
       Quick start:
         dazzle init my-project
@@ -141,11 +141,15 @@ class Dazzle < Formula
     # Test LSP dependencies are installed
     system libexec/"bin/python", "-c", "import dazzle.lsp"
 
-    # Test DSL validation with a minimal project
+    # Test DSL validation with a minimal project.
+    #  is required by the linker — without it, validate
+    # raises LinkError("project.root must be set in dazzle.toml")
+    # and the homebrew-tap CI fails inside this test block.
     (testpath/"dazzle.toml").write <<~TOML
       [project]
       name = "test"
       version = "0.1.0"
+      root = "test"
     TOML
 
     (testpath/"dsl").mkpath
