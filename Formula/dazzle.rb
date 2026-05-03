@@ -1,4 +1,4 @@
-# DAZZLE Homebrew Formula v0.63.104
+# DAZZLE Homebrew Formula v0.63.105
 #
 # Installation: brew install manwithacat/tap/dazzle
 #
@@ -9,11 +9,11 @@ class Dazzle < Formula
 
   desc "DSL-first application framework with LLM-assisted development"
   homepage "https://github.com/manwithacat/dazzle"
-  version "0.63.104"
+  version "0.63.105"
   license "MIT"
 
-  url "https://github.com/manwithacat/dazzle/archive/refs/tags/v0.63.104.tar.gz"
-  sha256 "4cd0c22dc219f8d6cea351525c4267f0c9910ba2a5c4810b6ae65b2ada302343"
+  url "https://github.com/manwithacat/dazzle/archive/refs/tags/v0.63.105.tar.gz"
+  sha256 "b8cef9e405c5230a265d0dc487e322b2b6b5dc1a2b1931dc97a2d18a5588b07e"
 
   # pydantic-core requires Rust to build from source, so use pre-built wheels
   resource "pydantic-core" do
@@ -63,6 +63,26 @@ class Dazzle < Formula
     end
   end
 
+  # cryptography ships a Rust _rust.abi3.so with minimal Mach-O headers
+  # that brew's fix_install_names chokes on (same class as pydantic-core
+  # / jiter). Pre-built wheel avoids the linkage-fix step.
+  resource "cryptography" do
+    on_macos do
+      url "https://files.pythonhosted.org/packages/a4/98/40dfe932134bdcae4f6ab5927c87488754bf9eb79297d7e0070b78dd58e9/cryptography-47.0.0-cp311-abi3-macosx_10_9_universal2.whl"
+      sha256 "160ad728f128972d362e714054f6ba0067cab7fb350c5202a9ae8ae4ce3ef1a0"
+    end
+    on_linux do
+      on_arm do
+        url "https://files.pythonhosted.org/packages/34/c6/2733531243fba725f58611b918056b277692f1033373dcc8bd01af1c05d4/cryptography-47.0.0-cp311-abi3-manylinux2014_aarch64.manylinux_2_17_aarch64.whl"
+        sha256 "b9a8943e359b7615db1a3ba587994618e094ff3d6fa5a390c73d079ce18b3973"
+      end
+      on_intel do
+        url "https://files.pythonhosted.org/packages/00/e3/b27be1a670a9b87f855d211cf0e1174a5d721216b7616bd52d8581d912ed/cryptography-47.0.0-cp311-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl"
+        sha256 "f5c15764f261394b22aef6b00252f5195f46f2ca300bec57149474e2538b31f8"
+      end
+    end
+  end
+
   depends_on "python@3.12"
 
   def install
@@ -82,6 +102,16 @@ class Dazzle < Formula
     resource("jiter").stage do
       wheel = Dir["*.whl"].first
       odie "jiter wheel not found in resource" unless wheel
+
+      system venv.root/"bin/python", "-m", "pip", "install",
+             "--no-deps", "--no-compile",
+             wheel
+    end
+
+    # Install cryptography wheel (same dylib-headers issue as jiter)
+    resource("cryptography").stage do
+      wheel = Dir["*.whl"].first
+      odie "cryptography wheel not found in resource" unless wheel
 
       system venv.root/"bin/python", "-m", "pip", "install",
              "--no-deps", "--no-compile",
@@ -109,7 +139,7 @@ class Dazzle < Formula
 
   def caveats
     <<~EOS
-      DAZZLE v0.63.104 has been installed!
+      DAZZLE v0.63.105 has been installed!
 
       Quick start:
         dazzle init my-project
