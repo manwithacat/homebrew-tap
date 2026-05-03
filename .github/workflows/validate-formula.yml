@@ -119,10 +119,11 @@ jobs:
       - name: Audit formula
         run: |
           # Use brew to audit the formula (catches common issues).
-          # Homebrew disabled the path-based form (`brew audit Formula/x.rb`)
-          # in 4.x; use the formula name with `brew audit dazzle` instead.
-          # The `brew tap` step earlier in the job mounts this repo as
-          # `manwithacat/tap` so the bare name resolves.
+          # Homebrew 4.x disabled the path form (`brew audit Formula/x.rb`),
+          # so we tap the local checkout FIRST and then use the formula
+          # name. The "Test formula installation" step taps again later;
+          # `brew tap` is idempotent so the duplicate is harmless.
+          brew tap manwithacat/tap "$PWD"
           brew audit --strict --formula dazzle || {
             echo "WARNING: brew audit found issues (non-blocking)"
           }
