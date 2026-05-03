@@ -29,14 +29,20 @@ jobs:
 
       - name: Get version to validate
         id: version
+        env:
+          # Sourced via env: to keep github.event.* off the run: command
+          # line — defends against shell metachars in dispatch payloads.
+          PAYLOAD_VERSION: ${{ github.event.client_payload.version }}
+          PAYLOAD_SOURCE_RUN: ${{ github.event.client_payload.source_run_id }}
+          INPUT_VERSION: ${{ github.event.inputs.version }}
         run: |
-          if [ "${{ github.event.client_payload.version }}" != "" ]; then
-            echo "VERSION=${{ github.event.client_payload.version }}" >> $GITHUB_OUTPUT
-            echo "SOURCE_RUN=${{ github.event.client_payload.source_run_id }}" >> $GITHUB_OUTPUT
-            echo "Validating version from dispatch: ${{ github.event.client_payload.version }}"
-          elif [ "${{ github.event.inputs.version }}" != "" ]; then
-            echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
-            echo "Validating version from manual input: ${{ github.event.inputs.version }}"
+          if [ -n "$PAYLOAD_VERSION" ]; then
+            echo "VERSION=$PAYLOAD_VERSION" >> $GITHUB_OUTPUT
+            echo "SOURCE_RUN=$PAYLOAD_SOURCE_RUN" >> $GITHUB_OUTPUT
+            echo "Validating version from dispatch: $PAYLOAD_VERSION"
+          elif [ -n "$INPUT_VERSION" ]; then
+            echo "VERSION=$INPUT_VERSION" >> $GITHUB_OUTPUT
+            echo "Validating version from manual input: $INPUT_VERSION"
           else
             # Extract from formula
             VERSION=$(grep 'version "' Formula/dazzle.rb | head -1 | cut -d'"' -f2)
@@ -112,8 +118,12 @@ jobs:
 
       - name: Audit formula
         run: |
-          # Use brew to audit the formula (catches common issues)
-          brew audit --strict --formula Formula/dazzle.rb || {
+          # Use brew to audit the formula (catches common issues).
+          # Homebrew disabled the path-based form (`brew audit Formula/x.rb`)
+          # in 4.x; use the formula name with `brew audit dazzle` instead.
+          # The `brew tap` step earlier in the job mounts this repo as
+          # `manwithacat/tap` so the bare name resolves.
+          brew audit --strict --formula dazzle || {
             echo "WARNING: brew audit found issues (non-blocking)"
           }
 
